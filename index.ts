@@ -12,6 +12,7 @@ import { AIMessage } from "langchain";
 import {
   buildCalendlyOAuthUrl,
   generateOAuthStateToken,
+  isTokenExpired,
   readTokenFromFile,
 } from "./calendly/auth.ts";
 import { initializeTempServer } from "./server.ts";
@@ -20,21 +21,14 @@ program
   .version("1.0.0")
   .description("Langchain Appointment Scheduler")
   .option("-r, --renew_token")
-  .action((options) => {
+  .action(async (options) => {
     // console.log(chalk.blue(`Hey, ${options.name}!`));
     // console.log(chalk.green(`Hey, ${options.name}!`));
     // console.log(chalk.red(`Hey, ${options.name}!`));
     if (options.renew_token) {
-      const OAuthStateToken = generateOAuthStateToken();
-      const url = buildCalendlyOAuthUrl(OAuthStateToken);
-      const server = initializeTempServer(OAuthStateToken);
-      const rl = initializeReadLineInterface();
-      rl.question(`Click the link, login, then click enter to confirm:
-        
-        ${url}`);
-      console.log(url);
+      await OAuthConnection();
     } else {
-      initializeCall();
+      await initializeCall();
     }
   });
 
@@ -135,4 +129,23 @@ async function importSystemPrompt(): Promise<string> {
 function initializeReadLineInterface() {
   const rl = readline.createInterface({ input, output });
   return rl;
+}
+
+async function OAuthConnection() {
+  const calendlyAuthData = await readTokenFromFile();
+
+  if (Object.keys(calendlyAuthData).length > 0) {
+    console.log("Auth Data already exists.");
+    return;
+  }
+
+  const OAuthStateToken = generateOAuthStateToken();
+  const url = buildCalendlyOAuthUrl(OAuthStateToken);
+  const server = await initializeTempServer(OAuthStateToken);
+  const rl = initializeReadLineInterface();
+  await rl.question(`Click the link, login, then click enter to confirm:
+        
+  ${url}`);
+  server.close();
+  return;
 }

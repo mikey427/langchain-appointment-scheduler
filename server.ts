@@ -21,7 +21,6 @@ export async function initializeTempServer(OAuthStateToken: string) {
 </html>`);
   });
   app.get("/auth/calendly", async (req: Request, res: Response) => {
-    console.log(req);
     const state = req.query.state as string;
     const code = req.query.code as string;
 
@@ -35,20 +34,20 @@ export async function initializeTempServer(OAuthStateToken: string) {
       return res.status(403).send("Invalid state token");
     }
 
-    console.log("OAuthStateToken Matches");
-
     // Request to calendly with Token
     const calendlyAuthData = await retrieveAuthToken(code);
 
     // TODO: Save to file
     console.log(calendlyAuthData);
-    writeTokenToFile(calendlyAuthData);
+    await writeTokenToFile(calendlyAuthData);
     // console.log("Query params:", req.query);
     // console.log("URL params:", req.params);
     // console.log("Headers:", req.headers);
     // console.log("Body:", req.body);
 
-    res.status(200);
+    res
+      .status(200)
+      .send("Authentication successful! You can close this window.");
   });
 
   const server = app.listen(3000, () => {

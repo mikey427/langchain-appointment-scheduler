@@ -1,5 +1,6 @@
 import fs from "fs/promises";
 import crypto from "crypto";
+import { write } from "fs";
 
 let OAuthStateToken = "";
 
@@ -17,14 +18,16 @@ interface CalendlyAuthData {
 export async function readTokenFromFile() {
   const tokenFilePath = "./tokens.json";
 
-  let calendlyTokenData;
-  calendlyTokenData = await fs.readFile(tokenFilePath, "utf8");
+  let calendlyTokenDataString;
+  calendlyTokenDataString = await fs.readFile(tokenFilePath, "utf8");
+
+  let calendlyTokenData = JSON.parse(calendlyTokenDataString);
 
   if (Object.keys(calendlyTokenData).length === 0) {
-    // TODO: Refresh token logic
+    console.log("NEED TO REINIT AUTH");
   }
 
-  console.log(calendlyTokenData);
+  // console.log(calendlyTokenData);
 
   return calendlyTokenData;
 }
@@ -96,4 +99,55 @@ export async function retrieveAuthToken(code: string) {
 
   const calendlyTokenData = await res.json();
   return calendlyTokenData;
+}
+
+export async function refreshAuthToken(refreshToken: string) {
+  const clientId = process.env.CALENDLY_CLIENT_ID;
+  const clientSecret = process.env.CALENDLY_CLIENT_SECRET;
+
+  const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString(
+    "base64"
+  );
+
+  const res = await fetch("https://auth.calendly.com/oauth/token", {
+    method: "POST",
+    headers: {
+      Authorization: `Basic ${credentials}`,
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: new URLSearchParams({
+      grant_type: "refresh_token",
+      refresh_token: refreshToken,
+    }),
+  });
+
+  const calendlyTokenData = await res.json();
+  return calendlyTokenData;
+}
+
+export async function getOrRefreshCalendlyAccessToken() {
+  let calendlyAuthData = await readTokenFromFile();
+
+  const isExpired = isTokenExpired(
+    calendlyAuthData.created_at,
+    calendlyAuthData.expires_in
+  );
+
+  if (isExpired) {
+    const refreshedTokenData = await refreshAuthToken(
+      calendlyAuthData.refresh_token
+    );
+    await writeTokenToFile(refreshedTokenData);
+    calendlyAuthData = refreshedTokenData;
+  }
+
+  return calendlyAuthData.access_token;
+}
+
+export function isTokenExpired(created_at: number, expires_in: number) {
+  const expirationDate = new Date((created_at + expires_in) * 1000);
+
+  const isExpired = expirationDate < new Date();
+
+  return isExpired;
 }
