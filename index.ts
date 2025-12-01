@@ -9,28 +9,43 @@ import { stdin as input, stdout as output } from "node:process";
 import { readFile } from "fs/promises";
 import { join } from "path";
 import { AIMessage } from "langchain";
+import {
+  buildCalendlyOAuthUrl,
+  generateOAuthStateToken,
+  readTokenFromFile,
+} from "./calendly/auth.ts";
+import { initializeTempServer } from "./server.ts";
 
 program
   .version("1.0.0")
   .description("Langchain Appointment Scheduler")
-  // .option("-n, --name <type>", "Add your name")
+  .option("-r, --renew_token")
   .action((options) => {
     // console.log(chalk.blue(`Hey, ${options.name}!`));
     // console.log(chalk.green(`Hey, ${options.name}!`));
     // console.log(chalk.red(`Hey, ${options.name}!`));
-
-    initializeCall();
+    if (options.renew_token) {
+      const OAuthStateToken = generateOAuthStateToken();
+      const url = buildCalendlyOAuthUrl(OAuthStateToken);
+      const server = initializeTempServer(OAuthStateToken);
+      const rl = initializeReadLineInterface();
+      rl.question(`Click the link, login, then click enter to confirm:
+        
+        ${url}`);
+      console.log(url);
+    } else {
+      initializeCall();
+    }
   });
 
 program.parse(process.argv);
 
 async function initializeCall() {
-  const llm = initializeLLM();
   const sysPrompt = await importSystemPrompt();
   if (!sysPrompt) {
     console.error("Sys Prompt empty");
   }
-  const rl = readline.createInterface({ input, output });
+  const rl = initializeReadLineInterface();
   let session = {
     id: 1,
     instructions: sysPrompt || "",
@@ -43,6 +58,7 @@ async function initializeCall() {
       },
     ],
   };
+  const llm = initializeLLM(session);
   while (true) {
     // Insert LLM Reply
     const callerInput = await rl.question("You: ");
@@ -114,4 +130,9 @@ async function importSystemPrompt(): Promise<string> {
     console.error("Error loading system prompt md file");
   }
   return sysPrompt;
+}
+
+function initializeReadLineInterface() {
+  const rl = readline.createInterface({ input, output });
+  return rl;
 }
