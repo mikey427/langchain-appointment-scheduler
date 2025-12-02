@@ -12,21 +12,26 @@ import { AIMessage } from "langchain";
 import {
   buildCalendlyOAuthUrl,
   generateOAuthStateToken,
+  getOrRefreshCalendlyAccessToken,
   isTokenExpired,
   readTokenFromFile,
-} from "./calendly/auth.ts";
+  refreshAuthToken,
+} from "./google/auth.ts";
 import { initializeTempServer } from "./server.ts";
 
 program
   .version("1.0.0")
   .description("Langchain Appointment Scheduler")
-  .option("-r, --renew_token")
+  .option("-c, --connect_oauth")
+  .option("-r, --refresh_token")
   .action(async (options) => {
     // console.log(chalk.blue(`Hey, ${options.name}!`));
     // console.log(chalk.green(`Hey, ${options.name}!`));
     // console.log(chalk.red(`Hey, ${options.name}!`));
-    if (options.renew_token) {
+    if (options.connect_oauth) {
       await OAuthConnection();
+    } else if (options.refresh_token) {
+      await getOrRefreshCalendlyAccessToken();
     } else {
       await initializeCall();
     }
@@ -134,9 +139,20 @@ function initializeReadLineInterface() {
 async function OAuthConnection() {
   const calendlyAuthData = await readTokenFromFile();
 
-  if (Object.keys(calendlyAuthData).length > 0) {
-    console.log("Auth Data already exists.");
-    return;
+  if (!calendlyAuthData.created_at || !calendlyAuthData.expires_in) {
+    console.log("Auth Data malformed.");
+  } else {
+    if (Object.keys(calendlyAuthData).length > 0) {
+      if (
+        !isTokenExpired(
+          calendlyAuthData.created_at,
+          calendlyAuthData.expires_in
+        )
+      ) {
+        console.log("Auth Data already exists. And is not expired.");
+        return;
+      }
+    }
   }
 
   const OAuthStateToken = generateOAuthStateToken();

@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import express from "express";
-import { retrieveAuthToken } from "./calendly/auth.ts";
-import { writeTokenToFile } from "./calendly/auth.ts";
+import { retrieveAuthToken } from "./google/auth.ts";
+import { writeTokenToFile } from "./google/auth.ts";
 
 export async function initializeTempServer(OAuthStateToken: string) {
   const app = express();
@@ -27,7 +27,9 @@ export async function initializeTempServer(OAuthStateToken: string) {
     if (!state || !code) {
       return res.status(400).send("Missing state or code");
     }
-
+    console.log("state: ", state);
+    console.log("OAuthStateToken", OAuthStateToken);
+    console.log(state, "== ", OAuthStateToken);
     if (state !== OAuthStateToken) {
       console.log("Incorrect OAuthStateToken");
 
@@ -37,13 +39,8 @@ export async function initializeTempServer(OAuthStateToken: string) {
     // Request to calendly with Token
     const calendlyAuthData = await retrieveAuthToken(code);
 
-    // TODO: Save to file
     console.log(calendlyAuthData);
     await writeTokenToFile(calendlyAuthData);
-    // console.log("Query params:", req.query);
-    // console.log("URL params:", req.params);
-    // console.log("Headers:", req.headers);
-    // console.log("Body:", req.body);
 
     res
       .status(200)
@@ -51,7 +48,7 @@ export async function initializeTempServer(OAuthStateToken: string) {
   });
 
   const server = app.listen(3000, () => {
-    console.log("Server running on port 3000");
+    // console.log("Server running on port 3000");
   });
 
   return server;

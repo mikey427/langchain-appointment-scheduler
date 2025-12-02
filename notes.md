@@ -6,10 +6,9 @@
 - get-availability
 - book-appointment
 - send-confirmation
-- get-caller-info
-
 
 ## OAuth Flow
+
 1. Load/check for existing tokens (if exist, skip OAuth)
 2. Generate OAuth URL (with client_id, redirect_uri, etc.)
 3. Start temporary express server

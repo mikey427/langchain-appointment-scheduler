@@ -66,6 +66,7 @@ export function buildCalendlyOAuthUrl(OAuthStateToken: string) {
     "http://localhost:3000/auth/calendly"
   );
   url.searchParams.append("state", OAuthStateToken);
+  console.log("OAUTHSTATETOKEN IN FUCNTION: ", OAuthStateToken);
 
   return url.toString();
 }
