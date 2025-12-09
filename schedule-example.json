@@ -1,0 +1,99 @@
+{
+    "availability": {
+        "monday": {
+            "start": "09:00",
+            "end": "18:00"
+        },
+        "tuesday": {
+            "start": "09:00",
+            "end": "18:00"
+        },
+        "wednesday": {
+            "start": "09:00",
+            "end": "18:00"
+        },
+        "thursday": {
+            "start": "09:00",
+            "end": "18:00"
+        },
+        "friday": {
+            "start": "09:00",
+            "end": "16:00"
+        },
+        "saturday": {
+            "start": "10:00",
+            "end": "14:00"
+        },
+        "sunday": null
+    },
+    "appointments": [
+        {
+            "id": 1,
+            "start_time": "2025-12-05T09:00:00Z",
+            "end_time": "2025-12-05T09:30:00Z",
+            "attendee_name": "Sarah Johnson",
+            "attendee_email": "sarah.j@example.com",
+            "attendee_phone": "+1555123456",
+            "appointment_type": "consultation",
+            "notes": "New patient consultation"
+        },
+        {
+            "id": 2,
+            "start_time": "2025-12-05T10:00:00Z",
+            "end_time": "2025-12-05T11:00:00Z",
+            "attendee_name": "Michael Chen",
+            "attendee_email": "m.chen@example.com",
+            "attendee_phone": "+1555987654",
+            "appointment_type": "procedure",
+            "notes": "Annual checkup and procedure"
+        },
+        {
+            "id": 3,
+            "start_time": "2025-12-05T14:30:00Z",
+            "end_time": "2025-12-05T14:45:00Z",
+            "attendee_name": "Emily Rodriguez",
+            "attendee_email": "emily.r@example.com",
+            "attendee_phone": "+1555246810",
+            "appointment_type": "follow-up",
+            "notes": "Post-procedure follow-up"
+        },
+        {
+            "id": 4,
+            "start_time": "2025-12-06T11:00:00Z",
+            "end_time": "2025-12-06T11:30:00Z",
+            "attendee_name": "David Park",
+            "attendee_email": "david.park@example.com",
+            "attendee_phone": "+1555369258",
+            "appointment_type": "consultation",
+            "notes": "Second opinion requested"
+        },
+        {
+            "id": 5,
+            "start_time": "2025-12-07T15:00:00Z",
+            "end_time": "2025-12-07T15:15:00Z",
+            "attendee_name": "Lisa Thompson",
+            "attendee_email": "lisa.t@example.com",
+            "attendee_phone": "+1555147258",
+            "appointment_type": "follow-up",
+            "notes": "Quick follow-up visit"
+        }
+    ],
+    "appointment_types": [
+        {
+            "name": "consultation",
+            "duration_minutes": 30
+        },
+        {
+            "name": "follow-up",
+            "duration_minutes": 15
+        },
+        {
+            "name": "procedure",
+            "duration_minutes": 60
+        },
+        {
+            "name": "emergency",
+            "duration_minutes": 45
+        }
+    ]
+}

@@ -18,13 +18,19 @@ import {
   refreshAuthToken,
 } from "./google/auth.ts";
 import { initializeTempServer } from "./server.ts";
+import { readScheduleJSON } from "./utils.ts";
+import { get_availability } from "./tools/get-availability.ts";
+
+let scheduleData;
 
 program
   .version("1.0.0")
   .description("Langchain Appointment Scheduler")
   .option("-c, --connect_oauth")
   .option("-r, --refresh_token")
+  .option("-t, --tool")
   .action(async (options) => {
+    scheduleData = await readScheduleJSON();
     // console.log(chalk.blue(`Hey, ${options.name}!`));
     // console.log(chalk.green(`Hey, ${options.name}!`));
     // console.log(chalk.red(`Hey, ${options.name}!`));
@@ -32,14 +38,16 @@ program
       await OAuthConnection();
     } else if (options.refresh_token) {
       await getOrRefreshCalendlyAccessToken();
+    } else if (options.tool) {
+      get_availability(scheduleData, "", "", "procedure");
     } else {
-      await initializeCall();
+      await initializeCall(scheduleData);
     }
   });
 
 program.parse(process.argv);
 
-async function initializeCall() {
+async function initializeCall(scheduleData: any) {
   const sysPrompt = await importSystemPrompt();
   if (!sysPrompt) {
     console.error("Sys Prompt empty");
