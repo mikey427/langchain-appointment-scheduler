@@ -20,6 +20,7 @@ import {
 import { initializeTempServer } from "./server.ts";
 import { readScheduleJSON } from "./utils.ts";
 import { get_availability } from "./tools/get-availability.ts";
+import { tools } from "./tools/index.ts";
 
 let scheduleData;
 
@@ -39,7 +40,7 @@ program
     } else if (options.refresh_token) {
       await getOrRefreshCalendlyAccessToken();
     } else if (options.tool) {
-      get_availability(scheduleData, "", "", "procedure");
+      get_availability(scheduleData, "procedure");
     } else {
       await initializeCall(scheduleData);
     }
@@ -125,7 +126,7 @@ function initializeLLM(session: any) {
     temperature: 0.85,
     topP: 0.8,
     useResponsesApi: true,
-  });
+  }).bindTools(tools);
 
   return llm;
 }

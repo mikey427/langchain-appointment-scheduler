@@ -39,18 +39,9 @@
             "notes": "First visit"
         }
     ],
-    "appointment_types": [
-        {
-            "name": "consultation",
-            "duration_minutes": 30
-        },
-        {
-            "name": "follow-up",
-            "duration_minutes": 15
-        },
-        {
-            "name": "procedure",
-            "duration_minutes": 60
-        }
-    ]
+    "appointment_type_durations": {
+        "consultation": 30,
+        "follow-up": 15,
+        "procedure": 60
+    }
 }

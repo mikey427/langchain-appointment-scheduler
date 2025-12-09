@@ -19,14 +19,13 @@
 // TODO: Implement date range when I implement an actual calendar
 export function get_availability(
   scheduleData: any,
-  startDate: string,
-  endDate: string,
+  // startDate: string,
+  // endDate: string,
   appointmentType: string
 ) {
   // Step 1: Pull in available time slots based on start/end date
-  const appointmentDuration = scheduleData.appointment_types.filter((type) => {
-    return type?.name === appointmentType;
-  })[0].duration_minutes;
+  const appointmentDuration =
+    scheduleData.appointment_type_durations[appointmentType];
 
   if (appointmentDuration === undefined) {
     console.log("get_availability error - no appointmentDuration");
