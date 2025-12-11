@@ -1,4 +1,4 @@
-import { writeScheduleJSON } from "../utils";
+import { writeScheduleJSON } from "../utils.ts";
 
 export function book_appointment(
   scheduleData: any,
@@ -10,8 +10,10 @@ export function book_appointment(
   phone: string,
   notes: string
 ) {
-  const newData = scheduleData.appointments.push({
-    id: scheduleData.appointments.length,
+  const newData = scheduleData;
+
+  newData.appointments.push({
+    id: scheduleData.appointments.length + 1,
     day,
     start_time: startTime,
     duration: scheduleData.appointment_type_durations[apptType],

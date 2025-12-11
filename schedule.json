@@ -1,47 +1,68 @@
 {
-    "availability": {
-        "sunday": null,
-        "monday": {
-            "start": "08:00",
-            "end": "17:00"
-        },
-        "tuesday": {
-            "start": "08:00",
-            "end": "17:00"
-        },
-        "wednesday": {
-            "start": "08:00",
-            "end": "17:00"
-        },
-        "thursday": {
-            "start": "08:00",
-            "end": "17:00"
-        },
-        "friday": {
-            "start": "08:00",
-            "end": "17:00"
-        },
-        "saturday": {
-            "start": "10:00",
-            "end": "14:00"
-        }
+  "availability": {
+    "sunday": null,
+    "monday": {
+      "start": "08:00",
+      "end": "17:00"
     },
-    "appointments": [
-        {
-            "id": 1,
-            "day": "Monday",
-            "start_time": "8:30",
-            "duration": 60,
-            "attendee_name": "John Doe",
-            "attendee_email": "john@example.com",
-            "attendee_phone": "+1234567890",
-            "appointment_type": "consultation",
-            "notes": "First visit"
-        }
-    ],
-    "appointment_type_durations": {
-        "consultation": 30,
-        "follow-up": 15,
-        "procedure": 60
+    "tuesday": {
+      "start": "08:00",
+      "end": "17:00"
+    },
+    "wednesday": {
+      "start": "08:00",
+      "end": "17:00"
+    },
+    "thursday": {
+      "start": "08:00",
+      "end": "17:00"
+    },
+    "friday": {
+      "start": "08:00",
+      "end": "17:00"
+    },
+    "saturday": {
+      "start": "10:00",
+      "end": "14:00"
     }
+  },
+  "appointments": [
+    {
+      "id": 1,
+      "day": "Monday",
+      "start_time": "8:30",
+      "duration": 60,
+      "attendee_name": "John Doe",
+      "attendee_email": "john@example.com",
+      "attendee_phone": "+1234567890",
+      "appointment_type": "consultation",
+      "notes": "First visit"
+    },
+    {
+      "id": 1,
+      "day": "Monday",
+      "start_time": "10:00",
+      "duration": 30,
+      "attendee_name": "John Doe",
+      "attendee_email": "johndoe@example.com",
+      "attendee_phone": "555-1234",
+      "appointment_type": "consultation",
+      "notes": "First-time consultation."
+    },
+    {
+      "id": 3,
+      "day": "Wednesday",
+      "start_time": "10:00",
+      "duration": 60,
+      "attendee_name": "Michael Baez",
+      "attendee_email": "",
+      "attendee_phone": "9084633740",
+      "appointment_type": "procedure"
+    }
+  ],
+  "appointment_type_durations": {
+    "consultation": 30,
+    "follow-up": 15,
+    "procedure": 60
+  }
 }

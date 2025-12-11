@@ -21,6 +21,7 @@ import { initializeTempServer } from "./server.ts";
 import { readScheduleJSON } from "./utils.ts";
 import { get_availability } from "./tools/get-availability.ts";
 import { tools } from "./tools/index.ts";
+import { toolHandler } from "./tools/index.ts";
 
 let scheduleData;
 
@@ -67,11 +68,12 @@ async function initializeCall(scheduleData: any) {
     ],
   };
   const llm = initializeLLM(session);
+  const llmWithTools = llm.bindTools(tools);
   while (true) {
     // Insert LLM Reply
     const callerInput = await rl.question("You: ");
     // Make LLM Request
-    session = await callLLM(llm, callerInput, session);
+    session = await callLLM(llmWithTools, callerInput, session);
     const llmResponse = session.conversation[session.conversation.length - 1];
     console.log(`Assistant: ${llmResponse.content}`);
     if (callerInput.toLowerCase() === "exit") {
@@ -82,51 +84,104 @@ async function initializeCall(scheduleData: any) {
   rl.close();
 }
 
-async function callLLM(llm: ChatOpenAI, callerInput: string, session: any) {
+async function callLLM(llm: any, callerInput: string | null, session: any) {
   let newSession = session;
-  newSession.conversation = [
-    ...newSession.conversation,
-    {
-      role: "user",
-      content: callerInput,
-    },
-  ];
+  if (callerInput !== null) {
+    newSession.conversation = [
+      ...newSession.conversation,
+      {
+        role: "user",
+        content: callerInput,
+      },
+    ];
+  }
   const response = await llm.invoke(newSession.conversation);
   // console.log(response);
 
   let assistantContent: string;
 
-  if (typeof response.content === "string") {
-    assistantContent = response.content;
-  } else if (Array.isArray(response.content)) {
-    assistantContent = response.content
-      .map((block: any) => block.text ?? "")
-      .join(" ");
-  } else if (response.content && typeof response.content === "object") {
-    const contentObj = response.content as { text?: string };
-    assistantContent = contentObj.text ?? "";
-  } else {
-    assistantContent = "";
-  }
+  if (response.tool_calls.length > 0) {
+    // Call tools and append to conversation
+    // console.log(response);
 
-  newSession.conversation = [
-    ...newSession.conversation,
-    {
-      role: "assistant",
-      content: assistantContent,
-    },
-  ];
+    const resultsArray: any[] = [];
+    for (const tool_call of response.tool_calls) {
+      const result = await toolHandler(tools, tool_call);
+      resultsArray.push(result);
+    }
+
+    assistantContent = `
+╔════════════════════════════════════════╗
+║           TOOL CALL EXECUTED           ║
+╚════════════════════════════════════════╝
+${response.tool_calls
+  .map(
+    (call: any, index: number) => `
+Tool #${index + 1}: ${call.name}
+Arguments: ${JSON.stringify(call.args, null, 2)}
+Result: ${JSON.stringify(resultsArray[index], null, 2)}
+${"─".repeat(40)}
+`
+  )
+  .join("\n")}
+`;
+
+    newSession.conversation = [
+      ...newSession.conversation,
+      {
+        role: "assistant",
+        content: response.content,
+        tool_calls: response.tool_calls,
+      },
+    ];
+
+    response.tool_calls.forEach((tool_call: any, index: number) => {
+      newSession.conversation.push({
+        role: "tool",
+        tool_call_id: tool_call.id,
+        name: tool_call.name,
+        content:
+          typeof resultsArray[index] === "string"
+            ? resultsArray[index]
+            : JSON.stringify(resultsArray[index]),
+      });
+    });
+
+    console.log(assistantContent);
+    return await callLLM(llm, null, newSession);
+  } else {
+    if (typeof response.content === "string") {
+      assistantContent = response.content;
+    } else if (Array.isArray(response.content)) {
+      assistantContent = response.content
+        .map((block: any) => block.text ?? "")
+        .join(" ");
+    } else if (response.content && typeof response.content === "object") {
+      const contentObj = response.content as { text?: string };
+      assistantContent = contentObj.text ?? "";
+    } else {
+      assistantContent = "";
+    }
+    newSession.conversation = [
+      ...newSession.conversation,
+      {
+        role: "assistant",
+        content: assistantContent,
+      },
+    ];
+  }
 
   return newSession;
 }
 
 function initializeLLM(session: any) {
   const llm = new ChatOpenAI({
-    model: "gpt-4.1-nano",
+    model: "gpt-4o-mini",
+    // model: "gpt-4o",
     temperature: 0.85,
     topP: 0.8,
     useResponsesApi: true,
-  }).bindTools(tools);
+  });
 
   return llm;
 }

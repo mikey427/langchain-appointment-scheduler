@@ -30,7 +30,7 @@ const getAvailabilityTool = tool(
 const getCurrentDatetimeTool = tool(
   async () => {
     const result = get_current_datetime();
-    return JSON.stringify(result);
+    return result;
   },
   {
     name: "get_current_datetime",
@@ -57,7 +57,7 @@ const bookAppointmentTool = tool(
       phone,
       notes
     );
-    return JSON.stringify(result);
+    return result;
   },
   {
     name: "book_appointment",
@@ -116,3 +116,12 @@ export const tools = [
   getCurrentDatetimeTool,
   bookAppointmentTool,
 ];
+
+export async function toolHandler(tools: any, toolCall: any) {
+  const toolFunction = tools.find((tool: any) => tool.name === toolCall.name);
+  if (!toolFunction) {
+    throw new Error(`Tool not found: ${toolCall.name}`);
+  }
+  const result = await toolFunction.invoke(toolCall.args);
+  return result;
+}

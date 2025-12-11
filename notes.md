@@ -19,3 +19,9 @@
 8. Shut down temporary server
 9. Refresh token (separate function, called when needed)
 10. Verify/fetch token (check expiration before using)
+
+Next steps:
+
+1. Build langgraph workflow
+2. Finish OAuth implementation
+3. Build twilio logic
