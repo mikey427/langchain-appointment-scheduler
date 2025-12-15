@@ -9,19 +9,17 @@ import { stdin as input, stdout as output } from "node:process";
 import { readFile } from "fs/promises";
 import { join } from "path";
 import { AIMessage } from "langchain";
-import {
-  buildCalendlyOAuthUrl,
-  generateOAuthStateToken,
-  getOrRefreshCalendlyAccessToken,
-  isTokenExpired,
-  readTokenFromFile,
-  refreshAuthToken,
-} from "./google/auth.ts";
-import { initializeTempServer } from "./server.ts";
+import { initializeTempServer } from "./google/server.ts";
 import { readScheduleJSON } from "./utils.ts";
 import { get_availability } from "./tools/get-availability.ts";
 import { tools } from "./tools/index.ts";
 import { toolHandler } from "./tools/index.ts";
+import { authenticateGoogle, readAuthFile } from "./google/auth.ts";
+import {
+  createAppt,
+  retrieveCalendarEvents,
+  retrieveCalendarId,
+} from "./google/calendar.ts";
 
 let scheduleData;
 
@@ -31,13 +29,21 @@ program
   .option("-c, --connect_oauth")
   .option("-r, --refresh_token")
   .option("-t, --tool")
+  .option("-g, --google_test")
   .action(async (options) => {
     scheduleData = await readScheduleJSON();
     // console.log(chalk.blue(`Hey, ${options.name}!`));
     // console.log(chalk.green(`Hey, ${options.name}!`));
     // console.log(chalk.red(`Hey, ${options.name}!`));
     if (options.connect_oauth) {
-      await OAuthConnection();
+      console.log("here");
+      await authenticateGoogle();
+    } else if (options.google_test) {
+      const auth = await readAuthFile();
+      const calendarId = process.env.GOOGLE_CALENDAR_ID || "";
+      // await retrieveCalendarEvents(auth.access_token, calendarId);
+      await createAppt(auth.access_token, calendarId);
+      // await retrieveCalendarId(auth.access_token);
     } else if (options.refresh_token) {
       await getOrRefreshCalendlyAccessToken();
     } else if (options.tool) {
@@ -200,32 +206,32 @@ function initializeReadLineInterface() {
   return rl;
 }
 
-async function OAuthConnection() {
-  const calendlyAuthData = await readTokenFromFile();
+// async function OAuthConnection() {
+//   const calendlyAuthData = await readTokenFromFile();
 
-  if (!calendlyAuthData.created_at || !calendlyAuthData.expires_in) {
-    console.log("Auth Data malformed.");
-  } else {
-    if (Object.keys(calendlyAuthData).length > 0) {
-      if (
-        !isTokenExpired(
-          calendlyAuthData.created_at,
-          calendlyAuthData.expires_in
-        )
-      ) {
-        console.log("Auth Data already exists. And is not expired.");
-        return;
-      }
-    }
-  }
+//   if (!calendlyAuthData.created_at || !calendlyAuthData.expires_in) {
+//     console.log("Auth Data malformed.");
+//   } else {
+//     if (Object.keys(calendlyAuthData).length > 0) {
+//       if (
+//         !isTokenExpired(
+//           calendlyAuthData.created_at,
+//           calendlyAuthData.expires_in
+//         )
+//       ) {
+//         console.log("Auth Data already exists. And is not expired.");
+//         return;
+//       }
+//     }
+//   }
 
-  const OAuthStateToken = generateOAuthStateToken();
-  const url = buildCalendlyOAuthUrl(OAuthStateToken);
-  const server = await initializeTempServer(OAuthStateToken);
-  const rl = initializeReadLineInterface();
-  await rl.question(`Click the link, login, then click enter to confirm:
-        
-  ${url}`);
-  server.close();
-  return;
-}
+//   const OAuthStateToken = generateOAuthStateToken();
+//   const url = buildCalendlyOAuthUrl(OAuthStateToken);
+//   const server = await initializeTempServer(OAuthStateToken);
+//   const rl = initializeReadLineInterface();
+//   await rl.question(`Click the link, login, then click enter to confirm:
+
+//   ${url}`);
+//   server.close();
+//   return;
+// }

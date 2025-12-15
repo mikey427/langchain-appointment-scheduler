@@ -1,154 +1,82 @@
-import fs from "fs/promises";
 import crypto from "crypto";
-import { write } from "fs";
+import fs from "fs";
+import { initializeTempServer } from "./server.ts";
 
-let OAuthStateToken = "";
+const googleAuthClientID = process.env.GOOGLE_CLIENT_ID || "";
+const googleAuthSecret = process.env.GOOGLE_CLIENT_SECRET || "";
+const googleRedirectURL =
+  process.env.GOOGLE_REDIRECT_URL || "localhost:3000/auth/google";
 
-interface CalendlyAuthData {
-  access_token: string;
-  token_type: string;
-  expires_in: number;
-  refresh_token: string;
-  scope: string;
-  created_at: number;
-  owner: string;
-  organization: string;
-}
-
-export async function readTokenFromFile() {
-  const tokenFilePath = "./tokens.json";
-
-  let calendlyTokenDataString;
-  calendlyTokenDataString = await fs.readFile(tokenFilePath, "utf8");
-
-  let calendlyTokenData = JSON.parse(calendlyTokenDataString);
-
-  if (Object.keys(calendlyTokenData).length === 0) {
-    console.log("NEED TO REINIT AUTH");
+function buildGoogleAuthUrl(state: string) {
+  if (!googleAuthClientID || !googleAuthSecret) {
+    console.log("Google credentials missing");
   }
 
-  // console.log(calendlyTokenData);
-
-  return calendlyTokenData;
-}
-
-export async function writeTokenToFile(calendlyOAuthData: CalendlyAuthData) {
-  const tokenFilePath = "./tokens.json";
-  const date = new Date(calendlyOAuthData.created_at * 1000);
-  const expiresAt = new Date(
-    (calendlyOAuthData.created_at + calendlyOAuthData.expires_in) * 1000
-  );
-
-  const stringifiedJSON = JSON.stringify(calendlyOAuthData, null, 2);
-
-  try {
-    await fs.writeFile(tokenFilePath, stringifiedJSON);
-    console.log("Calendly auth data successfully written to file");
-  } catch (err) {
-    console.error("Error writing to file: ", err);
-  }
-}
-
-export function buildCalendlyOAuthUrl(OAuthStateToken: string) {
-  const baseOAuthUrl = "https://auth.calendly.com/oauth/authorize";
-  const calendlyClientId = process.env.CALENDLY_CLIENT_ID || "";
-  const calendlyClientSecret = process.env.CALENDLY_CLIENT_SECRET || "";
-
-  if (calendlyClientId == "" || calendlyClientSecret == "") {
-    console.error("Missing Calendly Auth Env Variables");
-  }
-
-  const url = new URL(baseOAuthUrl);
-  url.searchParams.append("client_id", calendlyClientId);
+  const url = new URL("https://accounts.google.com/o/oauth2/v2/auth");
+  url.searchParams.append("client_id", googleAuthClientID);
+  url.searchParams.append("redirect_uri", googleRedirectURL);
   url.searchParams.append("response_type", "code");
-  url.searchParams.append(
-    "redirect_uri",
-    "http://localhost:3000/auth/calendly"
-  );
-  url.searchParams.append("state", OAuthStateToken);
-  console.log("OAUTHSTATETOKEN IN FUCNTION: ", OAuthStateToken);
+  url.searchParams.append("access_type", "offline");
+  url.searchParams.append("state", state);
+  url.searchParams.append("scope", "https://www.googleapis.com/auth/calendar");
 
-  return url.toString();
+  return url;
 }
 
-export function generateOAuthStateToken() {
-  OAuthStateToken = crypto.randomBytes(32).toString("hex");
+export async function authenticateGoogle() {
+  const state = crypto.randomBytes(32).toString("hex");
+  // Build Auth URL
+  const url = buildGoogleAuthUrl(state);
+  // Create temp server
+  const server = initializeTempServer(state);
+  // Display Auth URL
+  console.log(
+    `
+	Click the link below and log in.
 
-  return OAuthStateToken;
+	${url}
+	`
+  );
+
+  //   const response = await fetch("url", { method: "POST",
+  //    });
 }
 
 export async function retrieveAuthToken(code: string) {
-  const clientId = process.env.CALENDLY_CLIENT_ID;
-  const clientSecret = process.env.CALENDLY_CLIENT_SECRET;
+  const tokenUrl = "https://oauth2.googleapis.com/token";
 
-  const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString(
-    "base64"
-  );
-
-  const res = await fetch("https://auth.calendly.com/oauth/token", {
-    method: "POST",
-    headers: {
-      Authorization: `Basic ${credentials}`,
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: new URLSearchParams({
-      grant_type: "authorization_code",
-      code: code,
-      redirect_uri: "http://localhost:3000/auth/calendly",
-    }),
+  const params = new URLSearchParams({
+    code: code,
+    client_id: googleAuthClientID,
+    client_secret: googleAuthSecret,
+    redirect_uri: googleRedirectURL,
+    grant_type: "authorization_code",
   });
 
-  const calendlyTokenData = await res.json();
-  return calendlyTokenData;
-}
-
-export async function refreshAuthToken(refreshToken: string) {
-  const clientId = process.env.CALENDLY_CLIENT_ID;
-  const clientSecret = process.env.CALENDLY_CLIENT_SECRET;
-
-  const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString(
-    "base64"
-  );
-
-  const res = await fetch("https://auth.calendly.com/oauth/token", {
+  const response = await fetch(tokenUrl, {
     method: "POST",
     headers: {
-      Authorization: `Basic ${credentials}`,
       "Content-Type": "application/x-www-form-urlencoded",
     },
-    body: new URLSearchParams({
-      grant_type: "refresh_token",
-      refresh_token: refreshToken,
-    }),
+    body: params.toString(),
   });
 
-  const calendlyTokenData = await res.json();
-  return calendlyTokenData;
-}
-
-export async function getOrRefreshCalendlyAccessToken() {
-  let calendlyAuthData = await readTokenFromFile();
-
-  const isExpired = isTokenExpired(
-    calendlyAuthData.created_at,
-    calendlyAuthData.expires_in
-  );
-
-  if (isExpired) {
-    const refreshedTokenData = await refreshAuthToken(
-      calendlyAuthData.refresh_token
-    );
-    await writeTokenToFile(refreshedTokenData);
-    calendlyAuthData = refreshedTokenData;
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Token exchange failed: ${error}`);
   }
 
-  return calendlyAuthData.access_token;
+  const tokens = await response.json();
+
+  return tokens;
 }
 
-export function isTokenExpired(created_at: number, expires_in: number) {
-  const expirationDate = new Date((created_at + expires_in) * 1000);
+export async function writeToAuthFile(tokenData: any): Promise<void> {
+  const dataStr = JSON.stringify(tokenData, null, 2);
+  await fs.promises.writeFile("tokens.json", dataStr, "utf8");
+}
 
-  const isExpired = expirationDate < new Date();
-
-  return isExpired;
+export async function readAuthFile() {
+  const dataStr = await fs.promises.readFile("tokens.json", "utf8");
+  return JSON.parse(dataStr);
 }
