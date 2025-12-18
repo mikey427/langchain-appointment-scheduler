@@ -42,7 +42,16 @@ program
       const auth = await readAuthFile();
       const calendarId = process.env.GOOGLE_CALENDAR_ID || "";
       // await retrieveCalendarEvents(auth.access_token, calendarId);
-      await createAppt(auth.access_token, calendarId);
+      const apptStartDateTime = new Date("2025-12-18T16:00:00-08:00");
+      const apptEndDateTime = new Date("2025-12-18T17:00:00-08:00");
+      console.log(
+        await createAppt(
+          auth.access_token,
+          calendarId,
+          apptStartDateTime,
+          apptEndDateTime
+        )
+      );
       // await retrieveCalendarId(auth.access_token);
     } else if (options.refresh_token) {
       await getOrRefreshCalendlyAccessToken();

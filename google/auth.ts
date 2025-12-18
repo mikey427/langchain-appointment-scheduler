@@ -17,6 +17,7 @@ function buildGoogleAuthUrl(state: string) {
   url.searchParams.append("redirect_uri", googleRedirectURL);
   url.searchParams.append("response_type", "code");
   url.searchParams.append("access_type", "offline");
+  url.searchParams.append("prompt", "consent");
   url.searchParams.append("state", state);
   url.searchParams.append("scope", "https://www.googleapis.com/auth/calendar");
 
@@ -79,4 +80,12 @@ export async function writeToAuthFile(tokenData: any): Promise<void> {
 export async function readAuthFile() {
   const dataStr = await fs.promises.readFile("tokens.json", "utf8");
   return JSON.parse(dataStr);
+}
+
+export async function getOrRefreshGoogleAccessToken(tokenData: any) {
+  // Get created at time
+  // Get expiration
+  // Calculate ifExpired
+  // If not, return
+  // If yes, refresh token with
 }
