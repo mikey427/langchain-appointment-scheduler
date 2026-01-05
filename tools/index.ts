@@ -45,11 +45,21 @@ const getCurrentDatetimeTool = tool(
 );
 
 const bookAppointmentTool = tool(
-  async ({ day, start_time, appointment_type, name, email, phone, notes }) => {
+  async ({
+    date,
+    month,
+    start_time,
+    appointment_type,
+    name,
+    email,
+    phone,
+    notes,
+  }) => {
     const scheduleData = await readScheduleJSON();
     const result = book_appointment(
       scheduleData,
-      day,
+      date,
+      month,
       start_time,
       appointment_type,
       name,
@@ -66,10 +76,13 @@ const bookAppointmentTool = tool(
     schema: {
       type: "object",
       properties: {
-        day: {
+        date: {
           type: "string",
-          description:
-            "The day of the week for the appointment (e.g., Monday, Tuesday)",
+          description: "Day of the month. 1-31.",
+        },
+        month: {
+          type: "string",
+          description: "The month of the year. In number format 1-12.",
         },
         start_time: {
           type: "string",
@@ -100,7 +113,8 @@ const bookAppointmentTool = tool(
         },
       },
       required: [
-        "day",
+        "date",
+        "month",
         "start_time",
         "appointment_type",
         "name",

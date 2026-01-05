@@ -1,3 +1,4 @@
+import { Temporal } from "@js-temporal/polyfill";
 import { start } from "node:repl";
 
 export async function retrieveCalendarEvents(
@@ -37,12 +38,12 @@ export async function retrieveCalendarId(accessToken: string) {
 export async function createAppt(
   accessToken: string,
   calendarId: string,
-  startDatetime: Date,
-  endDateTime: Date
+  startDatetime: string,
+  endDateTime: string
 ) {
   // TODO: Start and End datetime validation / Error handling
-  console.log("starttime: ", startDatetime.toISOString());
-  console.log("endtime: ", endDateTime.toISOString());
+  // console.log("starttime: ", startDatetime.toISOString());
+  // console.log("endtime: ", endDateTime.toISOString());
 
   const res = await fetch(
     `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events`,
@@ -55,10 +56,10 @@ export async function createAppt(
       body: JSON.stringify({
         summary: "Appointment",
         start: {
-          dateTime: startDatetime.toISOString(),
+          dateTime: startDatetime,
         },
         end: {
-          dateTime: endDateTime.toISOString(),
+          dateTime: endDateTime,
         },
       }),
     }

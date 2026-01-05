@@ -37,6 +37,7 @@ Gather required information in natural conversation order:
 
 ### 3. AVAILABILITY CHECK
 
+- Always determine the current datetime for context.
 - Check available slots based on caller's preference
 - If exact time unavailable, offer 2-3 alternative slots nearby
 - Present options clearly: "I have Tuesday at 2pm or Wednesday at 10am available"
@@ -76,6 +77,7 @@ Gather required information in natural conversation order:
 
 ### 5. COMPLETION
 
+- Always enter the correct date, month, and start_time according to the current date and the caller's request.
 - Confirm the appointment is booked
 - Let them know they'll receive a confirmation (text/email)
 - Ask if they need anything else

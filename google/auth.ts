@@ -1,6 +1,9 @@
 import crypto from "crypto";
 import fs from "fs";
 import { initializeTempServer } from "./server.ts";
+import { Temporal } from "@js-temporal/polyfill";
+import { create } from "domain";
+import { response } from "express";
 
 const googleAuthClientID = process.env.GOOGLE_CLIENT_ID || "";
 const googleAuthSecret = process.env.GOOGLE_CLIENT_SECRET || "";
@@ -67,7 +70,7 @@ export async function retrieveAuthToken(code: string) {
     throw new Error(`Token exchange failed: ${error}`);
   }
 
-  const tokens = await response.json();
+  const tokens = response.json();
 
   return tokens;
 }
@@ -82,10 +85,63 @@ export async function readAuthFile() {
   return JSON.parse(dataStr);
 }
 
-export async function getOrRefreshGoogleAccessToken(tokenData: any) {
-  // Get created at time
-  // Get expiration
-  // Calculate ifExpired
-  // If not, return
-  // If yes, refresh token with
+async function refreshGoogleAccessToken(auth: AuthObject) {
+  try {
+    if (isExpired(auth.createdAt, Number(auth.refresh_token_expires_in))) {
+      throw new Error("Expired Google Refresh Token. Reinitialize OAuth");
+    }
+    const params = new URLSearchParams({
+      grant_type: "refresh_token",
+      refresh_token: auth.refresh_token,
+      client_id: googleAuthClientID,
+      client_secret: googleAuthSecret,
+    });
+    const res = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      body: params.toString(),
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    });
+
+    if (res.ok) {
+      const token = await res.json();
+      return token;
+    }
+  } catch (error) {
+    console.log(error);
+    return error;
+  }
+}
+
+export async function getOrRefreshGoogleAccessToken(auth: AuthObject) {
+  if (isExpired(auth.createdAt, auth.expires_in)) {
+    refreshGoogleAccessToken(auth);
+    // TODO: Store new Auth object (left off here)
+  } else {
+    return auth.access_token;
+  }
+  // If not expired, return current access_token
+  // If expired:
+  //   - POST to Google token endpoint with refresh_token
+  //   - Parse new access_token and expires_in from response
+  //   - Update token file with new data (keep same refresh_token)
+  //   - Return new access_token
+}
+
+function isExpired(createdAtStr: string, expiresInSecondsStr: number): boolean {
+  const createdAt = Temporal.Instant.from(createdAtStr);
+  const expiresIn = Temporal.Duration.from({ seconds: expiresInSecondsStr });
+  const expirationDateTime = createdAt.add(expiresIn);
+  return expirationDateTime < Temporal.Now.instant();
+}
+
+interface AuthObject {
+  createdAt: string;
+  access_token: string;
+  expires_in: number;
+  refresh_token: string;
+  scope: string;
+  token_type: string;
+  refresh_token_expires_in: string;
 }
