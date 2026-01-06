@@ -1,5 +1,5 @@
 import { writeScheduleJSON } from "../utils.ts";
-import { readAuthFile } from "../google/auth.ts";
+import { getOrRefreshGoogleAccessToken, readAuthFile } from "../google/auth.ts";
 import { Temporal } from "@js-temporal/polyfill";
 import { createAppt } from "../google/calendar.ts";
 
@@ -15,8 +15,7 @@ export async function book_appointment(
   notes: string
 ) {
   // const newData = scheduleData;
-  const auth = await readAuthFile();
-  const calendarId = process.env.GOOGLE_CALENDAR_ID || "";
+
   // newData.appointments.push({
   //   id: scheduleData.appointments.length + 1,
   //   day,
@@ -32,6 +31,9 @@ export async function book_appointment(
   try {
     // writeScheduleJSON(newData);
     // const currentYear = Temporal.Now.plainDateISO().year;
+    const auth = await getOrRefreshGoogleAccessToken();
+    console.log("auth", auth);
+    const calendarId = process.env.GOOGLE_CALENDAR_ID || "";
     const currentYear = 2026;
     const [hours, minutes]: number[] = startTime.split(":").map(Number);
     console.log("Parsed time:", { hours, minutes });
@@ -52,11 +54,12 @@ export async function book_appointment(
     });
     const apptDuration = scheduleData.appointment_type_durations[apptType];
     const endDateTime = startDatetime.add({ minutes: apptDuration });
+    // Update createAppt to add a descriptive name for the new appointment
     const result = await createAppt(
       auth.access_token,
       calendarId,
-      startDatetime.toString(),
-      endDateTime.toString()
+      startDatetime.toInstant().toString(),
+      endDateTime.toInstant().toString()
     );
     return { success: true, result: result };
   } catch (error) {

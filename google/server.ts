@@ -17,7 +17,7 @@ export async function initializeTempServer(state: string) {
       let tokens = await retrieveAuthToken(code);
 
       console.log("Tokens received:", tokens);
-      writeToAuthFile({ createdAt: new Date().toISOString(), ...tokens });
+      await writeToAuthFile({ createdAt: new Date().toISOString(), ...tokens });
       res.status(200).send("Authentication successful!");
     } catch (error) {
       console.log("Error: ", error);

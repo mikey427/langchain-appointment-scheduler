@@ -44,7 +44,19 @@ export async function createAppt(
   // TODO: Start and End datetime validation / Error handling
   // console.log("starttime: ", startDatetime.toISOString());
   // console.log("endtime: ", endDateTime.toISOString());
-
+  console.log(accessToken);
+  const requestBody = {
+    summary: "Appointment",
+    start: {
+      dateTime: startDatetime,
+      timeZone: "America/Los_Angeles",
+    },
+    end: {
+      dateTime: endDateTime,
+      timeZone: "America/Los_Angeles",
+    },
+  };
+  console.log(requestBody);
   const res = await fetch(
     `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events`,
     {
@@ -53,15 +65,7 @@ export async function createAppt(
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        summary: "Appointment",
-        start: {
-          dateTime: startDatetime,
-        },
-        end: {
-          dateTime: endDateTime,
-        },
-      }),
+      body: JSON.stringify(requestBody),
     }
   );
 

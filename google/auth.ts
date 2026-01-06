@@ -87,6 +87,7 @@ export async function readAuthFile() {
 
 async function refreshGoogleAccessToken(auth: AuthObject) {
   try {
+    console.log("authObj", auth);
     if (isExpired(auth.createdAt, Number(auth.refresh_token_expires_in))) {
       throw new Error("Expired Google Refresh Token. Reinitialize OAuth");
     }
@@ -110,30 +111,34 @@ async function refreshGoogleAccessToken(auth: AuthObject) {
     }
   } catch (error) {
     console.log(error);
-    return error;
+    throw error;
   }
 }
 
-export async function getOrRefreshGoogleAccessToken(auth: AuthObject) {
-  if (isExpired(auth.createdAt, auth.expires_in)) {
-    refreshGoogleAccessToken(auth);
-    // TODO: Store new Auth object (left off here)
-  } else {
-    return auth.access_token;
+export async function getOrRefreshGoogleAccessToken() {
+  try {
+    const auth = await readAuthFile();
+    console.log("auth read from file", auth);
+    if (isExpired(auth.createdAt, auth.expires_in)) {
+      const refreshedAuth = await refreshGoogleAccessToken(auth);
+      console.log("refreshedAuth", refreshedAuth);
+      await writeToAuthFile(refreshedAuth);
+      return refreshedAuth;
+    } else {
+      return auth;
+    }
+  } catch (error) {
+    return error;
   }
-  // If not expired, return current access_token
-  // If expired:
-  //   - POST to Google token endpoint with refresh_token
-  //   - Parse new access_token and expires_in from response
-  //   - Update token file with new data (keep same refresh_token)
-  //   - Return new access_token
 }
 
 function isExpired(createdAtStr: string, expiresInSecondsStr: number): boolean {
   const createdAt = Temporal.Instant.from(createdAtStr);
   const expiresIn = Temporal.Duration.from({ seconds: expiresInSecondsStr });
   const expirationDateTime = createdAt.add(expiresIn);
-  return expirationDateTime < Temporal.Now.instant();
+  return (
+    Temporal.Instant.compare(expirationDateTime, Temporal.Now.instant()) < 0
+  );
 }
 
 interface AuthObject {
