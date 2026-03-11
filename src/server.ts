@@ -9,9 +9,14 @@ const port = 3000;
 app.use(express.json());
 app.use(express.static(__dirname));
 
-app.get("/", (req: express.Request, res: express.Response) => {
-    res.send("Hello World!");
-});
+// app.get("/", (req: express.Request, res: express.Response) => {
+//     res.send("Hello World!");
+// });
+
+app.post("/init", (req: express.Request, res: express.Response) => {
+    console.log("Hit")
+    res.send("Inited.")
+})
 
 app.post("/chat", (req: express.Request, res: express.Response) => {
     console.log("req.body", req.body);

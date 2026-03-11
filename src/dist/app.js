@@ -1,4 +1,17 @@
 "use strict";
+async function initializeCall() {
+    console.log("Running init Call in frontend");
+    const initReq = await fetch("/init", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    });
+    console.log("initReq: ", initReq);
+}
+(async () => {
+    await initializeCall();
+})();
 document.addEventListener("DOMContentLoaded", () => {
     const button = document.querySelector(".submit-button");
     const input = document.querySelector(".chat-input");
@@ -21,4 +34,5 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("res", res);
     });
 });
+// export {}
 //# sourceMappingURL=app.js.map

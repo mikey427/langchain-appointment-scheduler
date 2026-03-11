@@ -70,12 +70,12 @@ program
 
 program.parse(process.argv);
 
-async function initializeCall(scheduleData: any) {
+async function initializeCall(scheduleData: any, inputMessage: string) {
 	const sysPrompt = await importSystemPrompt();
 	if (!sysPrompt) {
 		console.error("Sys Prompt empty");
 	}
-	const rl = initializeReadLineInterface();
+	// const rl = initializeReadLineInterface();
 	let session = {
 		id: 1,
 		instructions: sysPrompt || "",
@@ -92,18 +92,18 @@ async function initializeCall(scheduleData: any) {
 	const llmWithTools = llm.bindTools(tools);
 	while (true) {
 		// Insert LLM Reply
-		const callerInput = await rl.question("You: ");
+		// const callerInput = await rl.question("You: ");
+		const callerInput = inputMessage;
 		// Make LLM Request
 		session = await callLLM(llmWithTools, callerInput, session);
 		const llmResponse =
 			session.conversation[session.conversation.length - 1];
 		console.log(`Assistant: ${llmResponse.content}`);
-		if (callerInput.toLowerCase() === "exit") {
+		if (callerInput.toLowerCase() === "reset") {
 			break;
 		}
 	}
-
-	rl.close();
+	// rl.close();
 }
 
 async function callLLM(llm: any, callerInput: string | null, session: any) {
@@ -116,6 +116,9 @@ async function callLLM(llm: any, callerInput: string | null, session: any) {
 				content: callerInput,
 			},
 		];
+	} else {
+		// TODO: Handle this later
+		return;
 	}
 	const response = await llm.invoke(newSession.conversation);
 	// console.log(response);
@@ -217,10 +220,10 @@ async function importSystemPrompt(): Promise<string> {
 	return sysPrompt;
 }
 
-function initializeReadLineInterface() {
-	const rl = readline.createInterface({ input, output });
-	return rl;
-}
+// function initializeReadLineInterface() {
+// 	const rl = readline.createInterface({ input, output });
+// 	return rl;
+// }
 
 // async function OAuthConnection() {
 //   const calendlyAuthData = await readTokenFromFile();
