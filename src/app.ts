@@ -1,5 +1,15 @@
+
+
+interface Session {
+    id: string,
+    instructions: string,
+    tools: any,
+    schema: any,
+    conversation: any
+}
+
 async function initializeCall() {
-    console.log("Running init Call in frontend")
+    // console.log("Running init Call in frontend")
     const initReq = await fetch("/init", {
         method: "POST",
         headers: {
@@ -7,11 +17,17 @@ async function initializeCall() {
         }
     })
 
-    console.log("initReq: ", initReq)
-}
+    const data = await initReq.json();
 
+    console.log("initReq: ", initReq)
+    console.log("data: ", data)
+    return {
+        id: data.id
+    }
+}
+let session: Session;
 (async () => {
-    await initializeCall();
+    session = await initializeCall();
 })();
 
 
@@ -29,18 +45,52 @@ document.addEventListener("DOMContentLoaded", () => {
         // Fetch POST /chat with messages
 
         console.log("message: ", message);
+        console.log("session: ", session)
         const res = await fetch("/chat", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
+                id: String(session.id),
                 message,
             }),
         });
 
-        console.log("res", res);
+        const data = await res.json();
+
+        console.log("data: ", data)
+
+        if(res.ok) {
+            session = data.data;
+            refreshChatWindow()
+        }
+
+
     });
 });
+
+function refreshChatWindow() {
+    console.log("refreshing")
+    const container = document.querySelector(".messages");
+    (container as HTMLElement).innerHTML = "";
+
+    console.log("session: ", session)
+    if (!session.conversation) return;
+    session.conversation.forEach((turn: {
+        role: string, content: string
+    }, index:number) => {
+        if(index === 0) return;
+        const li = document.createElement("li");
+        if(turn.role === 'assistant') {
+            li.classList.add("message", "message-assistant")
+        } else {
+            li.classList.add("message", "message-user")
+        }
+        li.textContent = turn.content
+        container?.appendChild(li)
+        console.log("Chat added.")
+    })
+}
 
 // export {}

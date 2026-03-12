@@ -7,7 +7,11 @@ import { ChatOpenAI } from "@langchain/openai";
 import readline from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
 import { readFile } from "fs/promises";
-import { join } from "path";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 import { AIMessage } from "langchain";
 import { initializeTempServer } from "./google/server.ts";
 import { readScheduleJSON } from "./utils.ts";
@@ -64,53 +68,49 @@ program
 		} else if (options.tool) {
 			get_availability(scheduleData, "procedure");
 		} else {
-			await initializeCall(scheduleData);
+			// await initializeCall(scheduleData);
 		}
 	});
 
 program.parse(process.argv);
 
-async function initializeCall(scheduleData: any, inputMessage: string) {
-	const sysPrompt = await importSystemPrompt();
-	if (!sysPrompt) {
-		console.error("Sys Prompt empty");
-	}
-	// const rl = initializeReadLineInterface();
-	let session = {
-		id: 1,
-		instructions: sysPrompt || "",
-		tools: [],
-		schema: {},
-		conversation: [
-			{
-				role: "system",
-				content: sysPrompt,
-			},
-		],
-	};
-	const llm = initializeLLM(session);
-	const llmWithTools = llm.bindTools(tools);
-	while (true) {
-		// Insert LLM Reply
-		// const callerInput = await rl.question("You: ");
-		const callerInput = inputMessage;
-		// Make LLM Request
-		session = await callLLM(llmWithTools, callerInput, session);
-		const llmResponse =
-			session.conversation[session.conversation.length - 1];
-		console.log(`Assistant: ${llmResponse.content}`);
-		if (callerInput.toLowerCase() === "reset") {
-			break;
-		}
-	}
-	// rl.close();
-}
+// export async function initializeCall(session: any) {
 
-async function callLLM(llm: any, callerInput: string | null, session: any) {
+// 	// const rl = initializeReadLineInterface();
+// 	// let session = {
+// 	// 	id: 1,
+// 	// 	instructions: sysPrompt || "",
+// 	// 	tools: [],
+// 	// 	schema: {},
+// 	// 	conversation: [
+// 	// 		{
+// 	// 			role: "system",
+// 	// 			content: sysPrompt,
+// 	// 		},
+// 	// 	],
+// 	// };
+
+// 	while (true) {
+// 		// Insert LLM Reply
+// 		// const callerInput = await rl.question("You: ");
+// 		const callerInput = inputMessage;
+// 		// Make LLM Request
+// 		session = await callLLM(llmWithTools, callerInput, session);
+// 		const llmResponse =
+// 			session.conversation[session.conversation.length - 1];
+// 		console.log(`Assistant: ${llmResponse.content}`);
+// 		if (callerInput.toLowerCase() === "reset") {
+// 			break;
+// 		}
+// 	}
+// 	// rl.close();
+// }
+
+export async function callLLM(llm: any, callerInput: string | null, session: any) {
 	let newSession = session;
 	if (callerInput !== null) {
 		newSession.conversation = [
-			...newSession.conversation,
+			...newSession.conversation || null,
 			{
 				role: "user",
 				content: callerInput,
@@ -199,7 +199,7 @@ ${"─".repeat(40)}
 	return newSession;
 }
 
-function initializeLLM(session: any) {
+export function initializeLLM() {
 	const llm = new ChatOpenAI({
 		model: "gpt-4o-mini",
 		// model: "gpt-4o",
@@ -211,9 +211,9 @@ function initializeLLM(session: any) {
 	return llm;
 }
 
-async function importSystemPrompt(): Promise<string> {
+export async function importSystemPrompt(): Promise<string> {
 	// const instructionsPath = join("./instructions");
-	const sysPrompt = await readFile("./instructions/system_prompt.md", "utf8");
+	const sysPrompt = await readFile(join(__dirname, "instructions/system_prompt.md"), "utf8");
 	if (!sysPrompt) {
 		console.error("Error loading system prompt md file");
 	}
