@@ -2,7 +2,7 @@ import { importSystemPrompt } from "../index";
 
 export const sessions = new Map();
 
-export async function initalizeNewSession(){
+export async function initializeNewSession(){
 	const id = crypto.randomUUID();
 		const sysPrompt = await importSystemPrompt();
 	if (!sysPrompt) {

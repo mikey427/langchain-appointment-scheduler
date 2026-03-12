@@ -2,7 +2,7 @@ import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
 import { initializeCall, initializeLLM, callLLM } from "../index"
-import { initalizeNewSession, retrieveSession } from "./session";
+import { initializeNewSession, retrieveSession } from "./session";
 import {tools} from "../tools/index"
 import dotenv from "dotenv";
 
@@ -29,7 +29,7 @@ const llmWithTools = llm.bindTools(tools);
 
 app.post("/init", async (req: express.Request, res: express.Response) => {
     // console.log("Hit")
-    const session = await initalizeNewSession()
+    const session = await initializeNewSession()
     res.json({success: true, id: session.id})
 })
 
