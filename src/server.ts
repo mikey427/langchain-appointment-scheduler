@@ -1,7 +1,7 @@
 import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
-import { initializeCall, initializeLLM, callLLM } from "../index"
+import { initializeLLM, callLLM } from "../index"
 import { initializeNewSession, retrieveSession } from "./session";
 import {tools} from "../tools/index"
 import dotenv from "dotenv";

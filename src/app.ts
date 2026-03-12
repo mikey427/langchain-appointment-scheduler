@@ -27,7 +27,15 @@ async function initializeCall() {
 }
 let session: Session;
 (async () => {
-    session = await initializeCall();
+    const res = await initializeCall();
+    session = {
+        id: res.id,
+        instructions: "",
+        tools: [],
+        schema: {},
+        conversation: []
+    }
+
 })();
 
 
