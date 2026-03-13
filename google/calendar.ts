@@ -26,6 +26,8 @@ export async function retrieveCalendarEvents(
 	params.append("timeMax", endDate);
 	params.append("timeMin", startDate);
 
+	console.log("access token: ", accessToken)
+
 	const fetchEventsUrl = rawfetchEventsUrl.toString();
 	const res = await fetch(fetchEventsUrl, {
 		headers: {

@@ -32,17 +32,19 @@ body {
 .messages {
     display: flex;
     flex-direction: column;
+    list-style-type: none;
 }
 
 .message {
     position: relative; /* Essential for positioning the pseudo-element */
     background-color: #00bfb6; /* The bubble color */
-    color: white;
+    color: black;
     border-radius: 0.9rem; /* Rounded corners */
     padding: 1rem 1.4rem;
     max-width: 300px;
     /*margin: 1rem;*/
     width: auto;
+    
 }
 
 .message-user {

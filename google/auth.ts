@@ -2,13 +2,17 @@ import crypto from "crypto";
 import fs from "fs";
 import { initializeTempServer } from "./server.ts";
 import { Temporal } from "@js-temporal/polyfill";
+import path from "path";
+import { fileURLToPath } from 'url';
 
-const googleAuthClientID = process.env.GOOGLE_CLIENT_ID || "";
-const googleAuthSecret = process.env.GOOGLE_CLIENT_SECRET || "";
-const googleRedirectURL =
-	process.env.GOOGLE_REDIRECT_URL || "http://localhost:3000/auth/google";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 function buildGoogleAuthUrl(state: string) {
+	const googleAuthClientID = process.env.GOOGLE_CLIENT_ID || "";
+	const googleAuthSecret = process.env.GOOGLE_CLIENT_SECRET || "";
+	const googleRedirectURL =
+	process.env.GOOGLE_REDIRECT_URL || "http://localhost:3000/auth/google";
 	if (!googleAuthClientID || !googleAuthSecret) {
 		console.log("Google credentials missing");
 	}
@@ -45,6 +49,10 @@ export async function authenticateGoogle() {
 }
 
 export async function retrieveAuthToken(code: string) {
+	const googleAuthClientID = process.env.GOOGLE_CLIENT_ID || "";
+	const googleAuthSecret = process.env.GOOGLE_CLIENT_SECRET || "";
+	const googleRedirectURL =
+	process.env.GOOGLE_REDIRECT_URL || "http://localhost:3000/auth/google";
 	const tokenUrl = "https://oauth2.googleapis.com/token";
 
 	const params = new URLSearchParams({
@@ -75,15 +83,17 @@ export async function retrieveAuthToken(code: string) {
 
 export async function writeToAuthFile(tokenData: any): Promise<void> {
 	const dataStr = JSON.stringify(tokenData, null, 2);
-	await fs.promises.writeFile("tokens.json", dataStr, "utf8");
+	await fs.promises.writeFile(path.join(__dirname, "../tokens.json"), dataStr, "utf8");
 }
 
 export async function readAuthFile() {
-	const dataStr = await fs.promises.readFile("tokens.json", "utf8");
+	const dataStr = await fs.promises.readFile(path.join(__dirname, "../tokens.json"), "utf8");
 	return JSON.parse(dataStr);
 }
 
 async function refreshGoogleAccessToken(auth: AuthObject) {
+	const googleAuthClientID = process.env.GOOGLE_CLIENT_ID || "";
+	const googleAuthSecret = process.env.GOOGLE_CLIENT_SECRET || "";
 	try {
 		console.log("authObj", auth);
 		if (isExpired(auth.createdAt, Number(auth.refresh_token_expires_in))) {
@@ -102,6 +112,8 @@ async function refreshGoogleAccessToken(auth: AuthObject) {
 				"Content-Type": "application/x-www-form-urlencoded",
 			},
 		});
+
+	
 
 		if (!res.ok) {
 			const error = await res.text();
@@ -134,7 +146,7 @@ export async function getOrRefreshGoogleAccessToken() {
 			return auth;
 		}
 	} catch (error) {
-		return error;
+		throw error
 	}
 }
 

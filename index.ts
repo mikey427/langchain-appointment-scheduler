@@ -1,8 +1,7 @@
 #!/usr/bin/env node
-
+import dotenv from"dotenv/config";
 import { program } from "commander";
 import chalk from "chalk";
-import "dotenv/config";
 import { ChatOpenAI } from "@langchain/openai";
 import readline from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
@@ -116,9 +115,6 @@ export async function callLLM(llm: any, callerInput: string | null, session: any
 				content: callerInput,
 			},
 		];
-	} else {
-		// TODO: Handle this later
-		return;
 	}
 	const response = await llm.invoke(newSession.conversation);
 	// console.log(response);

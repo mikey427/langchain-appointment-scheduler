@@ -7,8 +7,6 @@ import {tools} from "../tools/index"
 import dotenv from "dotenv";
 
 
-
-
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, "../.env") });
 
@@ -43,6 +41,7 @@ app.post("/chat", async (req: express.Request, res: express.Response) => {
     // console.log("session: ", session)
 
     const updatedSession = await callLLM(llmWithTools, input, session)
+    console.log("updated Session: ", updatedSession)
     res.json({success: true, data: updatedSession});
 });
 

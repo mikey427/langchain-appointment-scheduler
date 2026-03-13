@@ -50,6 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
     button?.addEventListener("click", async () => {
         if (!input) return;
         const message = input.value;
+        input.value = "";
         // Fetch POST /chat with messages
 
         console.log("message: ", message);
@@ -74,7 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
             refreshChatWindow()
         }
 
-
+        input.focus();
     });
 });
 
@@ -88,13 +89,19 @@ function refreshChatWindow() {
     session.conversation.forEach((turn: {
         role: string, content: string
     }, index:number) => {
+        console.log("turn: ", turn)
         if(index === 0) return;
         const li = document.createElement("li");
         if(turn.role === 'assistant') {
             li.classList.add("message", "message-assistant")
-        } else {
+        } else if (turn.role === 'user'){
             li.classList.add("message", "message-user")
+        } else {
+            return
         }
+
+        if(!turn.content) return;
+        
         li.textContent = turn.content
         container?.appendChild(li)
         console.log("Chat added.")
