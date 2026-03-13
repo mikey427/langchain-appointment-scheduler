@@ -87,7 +87,7 @@ function refreshChatWindow() {
     console.log("session: ", session)
     if (!session.conversation) return;
     session.conversation.forEach((turn: {
-        role: string, content: string
+        role: string, content: string, tool_call_id?: string, name?: string
     }, index:number) => {
         console.log("turn: ", turn)
         if(index === 0) return;
@@ -96,16 +96,29 @@ function refreshChatWindow() {
             li.classList.add("message", "message-assistant")
         } else if (turn.role === 'user'){
             li.classList.add("message", "message-user")
-        } else {
+        } else if (turn.role === 'tool') {
+            if(turn?.name == "book_appointment" && index == session?.conversation.length - 2) {
+                console.log("appointment booked in if")
+                refreshCalendar();
+            }
+            return
+        } else{
             return
         }
 
-        if(!turn.content) return;
+        if(typeof turn.content !== 'string') return;
         
         li.textContent = turn.content
         container?.appendChild(li)
         console.log("Chat added.")
     })
+}
+
+function refreshCalendar() {
+    const calendar = document.querySelector('.calendar') as HTMLIFrameElement
+    console.log("calendar: ", calendar)
+    if(!calendar) return;
+    calendar.src = calendar?.src
 }
 
 // export {}
