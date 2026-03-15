@@ -137,10 +137,14 @@ function refreshChatWindow() {
 			// if (index === 0) return;
 			if (turn.role === "system") return;
 			const li = document.createElement("li");
+			const p = document.createElement("p");
+			p.classList.add("message-label")
 			if (turn.role === "assistant") {
 				li.classList.add("message", "message-assistant");
+				p.textContent = "Assistant"
 			} else if (turn.role === "user") {
 				li.classList.add("message", "message-user");
+				p.textContent = "You"
 			} else if (turn.role === "tool") {
 				if (
 					turn?.name == "book_appointment" &&
@@ -155,8 +159,12 @@ function refreshChatWindow() {
 			}
 
 			if (typeof turn.content !== "string") return;
-
-			li.textContent = turn.content;
+			li.appendChild(p);
+			// li.textContent = turn.content;
+			const text = document.createElement("p");
+			text.textContent = turn.content;
+			text.classList.add("message-text")
+			li.appendChild(text);
 			container?.appendChild(li);
 			console.log("Chat added.");
 		},

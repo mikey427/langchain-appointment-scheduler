@@ -65,6 +65,8 @@ body {
     /*margin: 1rem;*/
     width: auto;
     margin: 5px 0px 5px 0px;
+    display: flex;
+    flex-direction: column;
     
 }
 
@@ -110,6 +112,15 @@ body {
     left: 20px; /* Adjust horizontally */
 }
 
+.message-label {
+    color: #e4e2e2;
+    font-size: small;
+    margin: 0;
+}
+
+.message-text {
+    margin: 10px 0px 0px 0px;
+}
 .input-container {
     display: flex;
     width: 100%;
