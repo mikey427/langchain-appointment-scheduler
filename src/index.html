@@ -1,42 +1,52 @@
 <html>
-    <head>
-        <title>Langchain Appointment Agent</title>
-        <link rel="stylesheet" href="styles.css" />
-        <script src="dist/app.js"></script>
-    </head>
-    <body>
-        <div class="container">
-            <section class="chat-window">
-                <div class="reset-button-container">
-                    <button class="reset-button">Reset</button>
-                </div>
-                <div class="chat-history">
-                    <ul class="messages">
-                        <li class="message message-assistant">Hi! I'm your scheduling assistant. What can I help you book today?</li>
-                        
-                        <!-- <li class="message message-assistant">Message #2</li>
+	<head>
+		<title>Langchain Appointment Agent</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="stylesheet" href="styles.css" />
+		<script src="dist/app.js"></script>
+	</head>
+	<body>
+		<h1 class="app-header">LangChain Appointment Scheduler Demo App</h1>
+		<p class="header-desc">
+			An AI scheduling assistant built with LangChain, OpenAI, and Google
+			Calendar. Chat naturally to book appointments — the agent checks
+			real availability and writes directly to Google Calendar.
+		</p>
+		<div class="container">
+			<section class="chat-window">
+				<div class="reset-button-container">
+					<button class="button reset-button">Reset</button>
+				</div>
+				<div class="chat-history">
+					<ul class="messages">
+						<li class="message message-assistant">
+							Hi! I'm your scheduling assistant. What can I help
+							you book today?
+						</li>
+
+						<!-- <li class="message message-assistant">Message #2</li>
                         <li class="message message-user">Message #3</li>
                         <li class="message message-assistant">Message #4</li> -->
-                    </ul>
-                </div>
-                <div class="input-container">
-                    <input class="chat-input" />
-                    <button class="submit-button">Send</button>
-                </div>
-            </section>
-            <section class="google-calendar">
-                <iframe
-                    src="https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=America%2FLos_Angeles&showPrint=0&src=YzJkNThlZjc4MjRhODZjNzg2YWE4MmRlZjlhZjNhN2IzZDFhNTQyNDUxMGQ4ZWIyY2IxZWI2ZWNkNjkwMTdjZEBncm91cC5jYWxlbmRhci5nb29nbGUuY29t&src=ZW4udXNhI2hvbGlkYXlAZ3JvdXAudi5jYWxlbmRhci5nb29nbGUuY29t&color=%23d50000&color=%233f51b5"
-                    style="border: solid 1px #777"
-                    frameborder="0"
-                    scrolling="no"
-                    class="calendar"
-                ></iframe>
-            </section>
-            <!-- Section for Demo Control Panel -->
-            <!--<section>
+					</ul>
+				</div>
+				<div class="input-container">
+					<input class="chat-input" />
+					<button class="button submit-button">Send</button>
+				</div>
+			</section>
+			<section class="google-calendar">
+				<iframe
+					src="https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=America%2FLos_Angeles&showPrint=0&src=YzJkNThlZjc4MjRhODZjNzg2YWE4MmRlZjlhZjNhN2IzZDFhNTQyNDUxMGQ4ZWIyY2IxZWI2ZWNkNjkwMTdjZEBncm91cC5jYWxlbmRhci5nb29nbGUuY29t&src=ZW4udXNhI2hvbGlkYXlAZ3JvdXAudi5jYWxlbmRhci5nb29nbGUuY29t&color=%23d50000&color=%233f51b5"
+					style="border: solid 1px #777"
+					frameborder="0"
+					scrolling="no"
+					class="calendar"
+				></iframe>
+			</section>
+			<!-- Section for Demo Control Panel -->
+			<!--<section>
                 <button>Reset Demo</button>
             </section>-->
-        </div>
-    </body>
+		</div>
+	</body>
 </html>
