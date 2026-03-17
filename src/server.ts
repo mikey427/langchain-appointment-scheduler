@@ -1,11 +1,12 @@
 import express from "express";
+import cookieParser from "cookie-parser";
 import path from "path";
 import { fileURLToPath } from "url";
 import { initializeLLM, callLLM } from "../index"
 import { initializeNewSession, retrieveSession } from "./session";
 import {tools} from "../tools/index"
 import dotenv from "dotenv";
-
+import { rateLimit } from 'express-rate-limit'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, "../.env") });
@@ -14,8 +15,33 @@ dotenv.config({ path: path.join(__dirname, "../.env") });
 const app = express();
 const port = 3000;
 
+
+const limiter = rateLimit({
+	windowMs: 15 * 60 * 1000, // 15 minutes
+	limit: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
+	standardHeaders: 'draft-8', // draft-6: `RateLimit-*` headers; draft-7 & draft-8: combined `RateLimit` header
+	legacyHeaders: false, // Disable the `X-RateLimit-*` headers.
+	ipv6Subnet: 56, // Set to 60 or 64 to be less aggressive, or 52 or 48 to be more aggressive
+	// store: ... , // Redis, Memcached, etc. See below.
+})
+
+// Apply the rate limiting middleware to all requests.
+app.use(limiter)
+
 app.use(express.json());
-app.use(express.static(__dirname));
+app.use(cookieParser());
+
+
+app.use(["/", '/chat', '/init'], (req, res, next) => {
+    if (req.cookies?.authorized !== 'true') {
+        return res.redirect('/login');
+        // return res.status(401).json({ error: 'Unauthorized' })
+    }
+    next()
+})
+
+
+app.use(express.static(__dirname, { extensions: ['html'] }));
 
 // app.get("/", (req: express.Request, res: express.Response) => {
 //     res.send("Hello World!");
@@ -44,6 +70,15 @@ app.post("/chat", async (req: express.Request, res: express.Response) => {
     console.log("updated Session: ", updatedSession)
     res.json({success: true, data: updatedSession});
 });
+
+app.post('/verify', (req, res) => {
+    if (req.body.password === process.env.DEMO_PASSWORD) {
+        res.cookie('authorized', 'true', { httpOnly: true })
+        res.redirect("/")
+    } else {
+        res.status(401).json({ success: false })
+    }
+})
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`);

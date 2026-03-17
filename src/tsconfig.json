@@ -34,5 +34,5 @@
         "strict": true,
         "skipLibCheck": true
     },
-    "include": ["app.ts"]
+    "include": ["app.ts", "login.ts"]
 }
