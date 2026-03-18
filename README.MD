@@ -4,7 +4,9 @@ An AI scheduling assistant built with LangChain, OpenAI, and Google Calendar.
 Chat naturally to book appointments — the agent checks real availability and
 writes directly to Google Calendar.
 
-🔗 **[Live Demo](https://ai-appt-scheduler.michaelbaez.dev/)**
+Styling is still a WIP.
+
+🔗 **[Live Demo (Password: demo123)](https://ai-appt-scheduler.michaelbaez.dev/)**
 
 ![Demo Screenshot](./demo-screenshot.png)
 
