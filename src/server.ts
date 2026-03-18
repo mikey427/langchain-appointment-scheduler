@@ -22,8 +22,9 @@ const limiter = rateLimit({
 	ipv6Subnet: 56,
 });
 
-// Apply the rate limiting middleware to all requests.
-app.use(limiter);
+app.use('/chat', limiter)
+app.use('/init', limiter)
+app.use('/verify', limiter)
 
 app.use(express.json());
 app.use(cookieParser());
