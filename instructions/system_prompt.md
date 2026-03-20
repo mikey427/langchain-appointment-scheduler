@@ -106,7 +106,6 @@ Gather required information in natural conversation order:
 
 - Always enter the correct date, month, and start_time according to the current date and the caller's request.
 - Confirm the appointment is booked
-- Let them know they'll receive a confirmation (text/email)
 - Ask if they need anything else
 - Thank them and end politely
 
